@@ -1,0 +1,67 @@
+﻿@page "/fetchdata"
+@using BlazorCrudWithStateMachine.Model
+@using BlazorCrudWithStateMachine.Store
+@using BlazorCrudWithStateMachine.Store.BlazorFluxorStateManagement.Store.FetchDataUseCase
+@inject IState<FetchDataState> FetchDataState
+@inject IDispatcher Dispatcher
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+<PageTitle>Weather forecast</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Weather forecast</MudText>
+<MudText Class="mb-8">This component demonstrates fetching data from the server.</MudText>
+
+@if (FetchDataState.Value.IsLoading)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+    <MudTable Items="FetchDataState.Value.Forecasts" Hover="true" SortLabel="Sort By" Elevation="0">
+
+        <ToolBarContent>
+            <div class="justify-center mud-text-align-center">
+
+                <MudButton DisableElevation Variant="Variant.Filled" Color="Color.Primary"
+                           OnClick="(() => InvokeModal())" StartIcon="@Icons.Material.Filled.Add"
+                           IconColor="Color.Surface">Create</MudButton>
+            </div>
+            <MudSpacer />
+
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<WeatherForecast, object>(x=>x.Date)">Date</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<WeatherForecast, object>(x=>x.TemperatureC)">Temp. (C)</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<WeatherForecast, object>(x=>x.TemperatureF)">Temp. (F)</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<WeatherForecast, object>(x=>x.Summary!)">Summary</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Date">@context.Date</MudTd>
+            <MudTd DataLabel="Temp. (C)">@context.TemperatureC</MudTd>
+            <MudTd DataLabel="Temp. (F)">@context.TemperatureF</MudTd>
+            <MudTd DataLabel="Summary">@context.Summary</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+        </PagerContent>
+    </MudTable>
+}
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        Dispatcher.Dispatch(new FetchDataAction());
+    }
+
+    private Task InvokeModal(int id = 0)
+    {
+        Dispatcher.Dispatch(new CreateDataAction(id));
+
+        return Task.CompletedTask;
+    }
+
+}
